@@ -1,0 +1,67 @@
+---
+- name: Install HTTPS transport for apt
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+  when: syncthing__apt_repository_url.startswith('https')
+  register: result
+  until: result is succeeded
+  retries: 5
+  delay: 2
+
+- name: Import syncthing GPG key to apt
+  ansible.builtin.get_url:
+    url: "{{ syncthing__apt_key_url }}"
+    dest: /etc/apt/keyrings/syncthing.asc
+    owner: root
+    group: root
+    mode: "0644"
+  register: result
+  until: result is succeeded
+  retries: 5
+  delay: 2
+
+- name: Add syncthing repository
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/etc/apt/keyrings/syncthing.asc] {{ syncthing__apt_repository_url }} syncthing release
+
+- name: Install syncthing
+  ansible.builtin.apt:
+    name: "{{ syncthing__package + '=' + syncthing__version if syncthing__version else syncthing__package }}"
+  register: result
+  until: result is succeeded
+  retries: 5
+  delay: 2
+
+- name: Create syncthing service unit file
+  ansible.builtin.template:
+    src: syncthing.service.j2
+    dest: /etc/systemd/system/syncthing.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart syncthing
+
+- name: Create syncthing home
+  ansible.builtin.file:
+    path: "{{ syncthing__home_path }}"
+    owner: "{{ syncthing__user }}"
+    group: "{{ syncthing__group }}"
+    state: directory
+    mode: "0700"
+  notify: Restart syncthing
+
+- name: Start and enable syncthing
+  ansible.builtin.systemd:
+    name: syncthing.service
+    state: started
+    daemon_reload: true
+    enabled: true
+
+- name: Flush Handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Verify syncthing is running
+  ansible.builtin.wait_for:
+    port: "{{ syncthing__wait_for_port }}"

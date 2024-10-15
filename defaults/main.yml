@@ -1,0 +1,10 @@
+---
+syncthing__apt_key_url: https://syncthing.net/release-key.txt
+syncthing__apt_repository_host: apt.syncthing.net
+syncthing__apt_repository_url: https://{{ syncthing__apt_repository_host }}
+syncthing__version: ""
+syncthing__package: syncthing
+syncthing__home_path: /usr/local/share/syncthing
+syncthing__user: nobody
+syncthing__group: nogroup
+syncthing__wait_for_port: 22000
