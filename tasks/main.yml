@@ -22,9 +22,15 @@
   retries: 5
   delay: 2
 
-- name: Add syncthing repository
+- name: Clean up old syncthing repository
   ansible.builtin.apt_repository:
     repo: deb [signed-by=/etc/apt/keyrings/syncthing.asc] {{ syncthing__apt_repository_url }} syncthing release
+    filename: syncthing
+    state: absent
+
+- name: Add syncthing repository
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/etc/apt/keyrings/syncthing.asc] {{ syncthing__apt_repository_url }} syncthing stable
     filename: syncthing
 
 - name: Install syncthing
