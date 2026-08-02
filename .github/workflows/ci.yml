@@ -40,7 +40,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - distro: debian12
+          - distro: debian13
             playbook: converge.yml
     steps:
       - name: Check out the codebase.
