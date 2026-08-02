@@ -10,28 +10,26 @@
   retries: 5
   delay: 2
 
-- name: Import syncthing GPG key to apt
-  ansible.builtin.get_url:
-    url: "{{ syncthing__apt_key_url }}"
-    dest: /etc/apt/keyrings/syncthing.asc
-    owner: root
-    group: root
-    mode: "0644"
-  register: result
-  until: result is succeeded
-  retries: 5
-  delay: 2
+- name: Get DEB architecture
+  ansible.builtin.command: dpkg --print-architecture
+  register: deb_architecture
+  changed_when: false
 
 - name: Clean up old syncthing repository
-  ansible.builtin.apt_repository:
-    repo: deb [signed-by=/etc/apt/keyrings/syncthing.asc] {{ syncthing__apt_repository_url }} syncthing release
-    filename: syncthing
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/syncthing.list
     state: absent
 
 - name: Add syncthing repository
-  ansible.builtin.apt_repository:
-    repo: deb [signed-by=/etc/apt/keyrings/syncthing.asc] {{ syncthing__apt_repository_url }} syncthing stable
-    filename: syncthing
+  ansible.builtin.deb822_repository:
+    name: syncthing
+    types: deb
+    install_python_debian: true
+    uris: '{{ syncthing__apt_repository_url }}'
+    suites: syncthing
+    components: stable
+    architectures: '{{ deb_architecture.stdout }}'
+    signed_by: https://syncthing.net/release-key.txt
 
 - name: Install syncthing
   ansible.builtin.apt:
