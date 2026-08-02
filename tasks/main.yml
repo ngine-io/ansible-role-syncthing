@@ -13,6 +13,7 @@
 - name: Get DEB architecture
   ansible.builtin.command: dpkg --print-architecture
   register: deb_architecture
+  changed_when: false
 
 - name: Clean up old syncthing repository
   ansible.builtin.file:
