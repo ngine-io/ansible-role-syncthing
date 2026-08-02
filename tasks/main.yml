@@ -25,10 +25,10 @@
     name: syncthing
     types: deb
     install_python_debian: true
-    uris: '{{ syncthing__apt_repository_url }}'
+    uris: "{{ syncthing__apt_repository_url }}"
     suites: syncthing
     components: stable
-    architectures: '{{ deb_architecture.stdout }}'
+    architectures: "{{ deb_architecture.stdout }}"
     signed_by: https://syncthing.net/release-key.txt
 
 - name: Install syncthing
